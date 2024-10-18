@@ -212,6 +212,41 @@
             margin: 20px auto;
             background-color: var(--background-color);
         }
+
+        .chessboard {
+            width: 400px;
+            height: 400px;
+            margin: 20px auto;
+            border: 2px solid var(--primary-color);
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+        }
+
+        .chess-square {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+            cursor: pointer;
+        }
+
+        .chess-square-light {
+            background-color: #f0d9b5;
+        }
+
+        .chess-square-dark {
+            background-color: #b58863;
+        }
+
+        .chess-piece {
+            user-select: none;
+        }
+
+        .selected {
+            background-color: #7fc97f !important;
+        }
     </style>
 </head>
 <body>
@@ -243,7 +278,13 @@
                 <p>Guide the snake to eat food and grow, but don't hit the walls or yourself!</p>
                 <button onclick="startSnakeGame()">Play Snake</button>
             </div>
+            <div class="game-option">
+                <h3>Chess Game</h3>
+                <p>Play a game of chess against yourself!</p>
+                <button onclick="startChessGame()">Play Chess</button>
+            </div>
             <canvas id="gameCanvas" width="400" height="400" style="display:none;"></canvas>
+            <div id="chessboard" class="chessboard" style="display:none;"></div>
         </div>
 
         <div id="fun-fact" class="tab-content">
@@ -364,6 +405,8 @@
         function startCatchTheThief() {
             const canvas = document.getElementById('gameCanvas');
             canvas.style.display = 'block';
+            const chessboard = document.getElementById('chessboard');
+            chessboard.style.display = 'none';
             const ctx = canvas.getContext('2d');
             
             let police = { x: 200, y: 200, size: 20 };
@@ -427,6 +470,8 @@
         function startSnakeGame() {
             const canvas = document.getElementById('gameCanvas');
             canvas.style.display = 'block';
+            const chessboard = document.getElementById('chessboard');
+            chessboard.style.display = 'none';
             const ctx = canvas.getContext('2d');
 
             const gridSize = 20;
@@ -501,6 +546,56 @@
             };
 
             gameLoop();
+        }
+
+        // Chess game
+        function startChessGame() {
+            const canvas = document.getElementById('gameCanvas');
+            canvas.style.display = 'none';
+            const chessboard = document.getElementById('chessboard');
+            chessboard.style.display = 'grid';
+            chessboard.innerHTML = '';
+
+            const initialBoard = [
+                ['♜', '♞', '♝', '♛', '♚', '♝', '♞', '♜'],
+                ['♟', '♟', '♟', '♟', '♟', '♟', '♟', '♟'],
+                ['', '', '', '', '', '', '', ''],
+                ['', '', '', '', '', '', '', ''],
+                ['', '', '', '', '', '', '', ''],
+                ['', '', '', '', '', '', '', ''],
+                ['♙', '♙', '♙', '♙', '♙', '♙', '♙', '♙'],
+                ['♖', '♘', '♗', '♕', '♔', '♗', '♘', '♖']
+            ];
+
+            let selectedPiece = null;
+
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const square = document.createElement('div');
+                    square.className = `chess-square ${(row + col) % 2 === 0 ? 'chess-square-light' : 'chess-square-dark'}`;
+                    square.innerHTML = `<span class="chess-piece">${initialBoard[row][col]}</span>`;
+                    square.onclick = () => handleSquareClick(row, col);
+                    chessboard.appendChild(square);
+                }
+            }
+
+            function handleSquareClick(row, col) {
+                const squares = document.querySelectorAll('.chess-square');
+                const clickedSquare = squares[row * 8 + col];
+                const piece = clickedSquare.querySelector('.chess-piece').textContent;
+
+                if (selectedPiece) {
+                    // Move the piece
+                    clickedSquare.querySelector('.chess-piece').textContent = selectedPiece.piece;
+                    selectedPiece.square.querySelector('.chess-piece').textContent = '';
+                    selectedPiece.square.classList.remove('selected');
+                    selectedPiece = null;
+                } else if (piece) {
+                    // Select the piece
+                    selectedPiece = { square: clickedSquare, piece: piece };
+                    clickedSquare.classList.add('selected');
+                }
+            }
         }
 
         // Show home tab by default
